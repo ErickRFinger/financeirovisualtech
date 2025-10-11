@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { supabase } from '../supabaseClient';
+import { ThemeContext } from '../contexts/ThemeContext';
+import { Container, Row, Col, Card, Form, Button, Spinner, Alert } from 'react-bootstrap';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -9,13 +11,19 @@ export default function Auth() {
   const [name, setName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
+
+  const { theme } = useContext(ThemeContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+    setMessage('');
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
-      alert(error.error_description || error.message);
+      setError(error.error_description || error.message);
     }
     setLoading(false);
   };
@@ -23,152 +31,138 @@ export default function Auth() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      alert("As senhas não coincidem!");
+      setError("As senhas não coincidem!");
       return;
     }
     if (!acceptTerms) {
-        alert("Você deve aceitar os termos de uso");
-        return;
+      setError("Você deve aceitar os termos de uso");
+      return;
     }
     setLoading(true);
+    setError('');
+    setMessage('');
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { name } },
     });
     if (error) {
-      alert(error.error_description || error.message);
+      setError(error.error_description || error.message);
     } else {
-      alert('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.');
-      setIsRegisterView(false); // Volta para a tela de login
+      setMessage('Cadastro realizado com sucesso! Verifique seu e-mail para confirmar a conta.');
+      setIsRegisterView(false); // Go back to login view
     }
     setLoading(false);
   };
 
-  return (
-    <div className={`auth-screen active`}>
-      <div className="auth-container">
-        {isRegisterView ? (
-          <>
-            <div className="auth-header">
-              <h1>💰 Controle de Financeiro Visual Tech</h1>
-              <p>Crie sua conta gratuita</p>
-            </div>
-            <form onSubmit={handleSignUp} className="auth-form">
-              <div className="form-group">
-                <label htmlFor="registerName">Nome:</label>
-                <input
-                  type="text"
-                  id="registerName"
-                  required
-                  placeholder="Seu nome completo"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="registerEmail">Email:</label>
-                <input
-                  type="email"
-                  id="registerEmail"
-                  required
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="registerPassword">Senha:</label>
-                <input
+  const AuthForm = (
+    <Card bg={theme} text={theme === 'dark' ? 'light' : 'dark'} className="shadow-lg">
+      <Card.Body className="p-4 p-sm-5">
+        <div className="text-center mb-4">
+          <h1 className="h3 fw-bold">💰 Controle Financeiro</h1>
+          <p className="text-muted">{isRegisterView ? "Crie sua conta gratuita" : "Faça login para acessar"}</p>
+        </div>
+
+        {error && <Alert variant="danger">{error}</Alert>}
+        {message && <Alert variant="success">{message}</Alert>}
+
+        <Form onSubmit={isRegisterView ? handleSignUp : handleLogin}>
+          {isRegisterView && (
+            <Form.Group className="mb-3" controlId="registerName">
+              <Form.Label>Nome</Form.Label>
+              <Form.Control
+                type="text"
+                required
+                placeholder="Seu nome completo"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </Form.Group>
+          )}
+
+          <Form.Group className="mb-3" controlId="authEmail">
+            <Form.Label>Email</Form.Label>
+            <Form.Control
+              type="email"
+              required
+              placeholder="seu@email.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Form.Group>
+
+          <Form.Group className="mb-3" controlId="authPassword">
+            <Form.Label>Senha</Form.Label>
+            <Form.Control
+              type="password"
+              required
+              placeholder={isRegisterView ? "Mínimo 6 caracteres" : "Sua senha"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Form.Group>
+
+          {isRegisterView && (
+            <>
+              <Form.Group className="mb-3" controlId="registerConfirmPassword">
+                <Form.Label>Confirmar Senha</Form.Label>
+                <Form.Control
                   type="password"
-                  id="registerPassword"
-                  required
-                  placeholder="Mínimo 6 caracteres"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <div className="form-group">
-                <label htmlFor="registerConfirmPassword">Confirmar Senha:</label>
-                <input
-                  type="password"
-                  id="registerConfirmPassword"
                   required
                   placeholder="Digite a senha novamente"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                 />
-              </div>
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    id="acceptTerms"
-                    required
-                    checked={acceptTerms}
-                    onChange={(e) => setAcceptTerms(e.target.checked)}
-                  />
-                  <span className="checkmark"></span>
-                  Aceito os termos de uso
-                </label>
-              </div>
-              <button type="submit" className="auth-btn" disabled={loading}>
-                {loading ? <span>Carregando...</span> : <span>Criar Conta</span>}
-              </button>
-            </form>
-            <div className="auth-footer">
-              <p>
-                Já tem uma conta?{' '}
-                <button type="button" onClick={() => setIsRegisterView(false)} className="link-btn">
-                  Faça login
-                </button>
-              </p>
-            </div>
-          </>
-        ) : (
-          <>
-            <div className="auth-header">
-              <h1>💰 Controle de Financeiro Visual Tech</h1>
-              <p>Faça login para acessar sua conta</p>
-            </div>
-            <form onSubmit={handleLogin} className="auth-form">
-              <div className="form-group">
-                <label htmlFor="loginEmail">Email:</label>
-                <input
-                  type="email"
-                  id="loginEmail"
+              </Form.Group>
+              <Form.Group className="mb-3" controlId="acceptTerms">
+                <Form.Check 
+                  type="checkbox"
+                  label="Aceito os termos de uso"
                   required
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  checked={acceptTerms}
+                  onChange={(e) => setAcceptTerms(e.target.checked)}
                 />
-              </div>
-              <div className="form-group">
-                <label htmlFor="loginPassword">Senha:</label>
-                <input
-                  type="password"
-                  id="loginPassword"
-                  required
-                  placeholder="Sua senha"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              <button type="submit" className="auth-btn" disabled={loading}>
-                {loading ? <span>Carregando...</span> : <span>Entrar</span>}
-              </button>
-            </form>
-            <div className="auth-footer">
-              <p>
-                Não tem uma conta?{' '}
-                <button type="button" onClick={() => setIsRegisterView(true)} className="link-btn">
-                  Cadastre-se
-                </button>
-              </p>
-            </div>
-          </>
-        )}
-      </div>
+              </Form.Group>
+            </>
+          )}
+
+          <div className="d-grid">
+            <Button variant="primary" type="submit" disabled={loading}>
+              {loading ? (
+                <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Carregando...</>
+              ) : (
+                isRegisterView ? "Criar Conta" : "Entrar"
+              )}
+            </Button>
+          </div>
+        </Form>
+
+        <div className="text-center mt-4">
+          {isRegisterView ? (
+            <p className="text-muted">
+              Já tem uma conta?{" "}
+              <Button variant="link" onClick={() => { setIsRegisterView(false); setError(''); setMessage(''); }}>
+                Faça login
+              </Button>
+            </p>
+          ) : (
+            <p className="text-muted">
+              Não tem uma conta?{" "}
+              <Button variant="link" onClick={() => { setIsRegisterView(true); setError(''); setMessage(''); }}>
+                Cadastre-se
+              </Button>
+            </p>
+          )}
+        </div>
+      </Card.Body>
+    </Card>
+  );
+
+  return (
+    <div className="d-flex align-items-center justify-content-center min-vh-100">
+        <Col md={6} lg={4}>
+            {AuthForm}
+        </Col>
     </div>
   );
 }

@@ -1,9 +1,13 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useContext } from 'react';
 import { supabase } from '../supabaseClient';
+import { ThemeContext } from '../contexts/ThemeContext';
+import { Container, Navbar, Nav, Button, Spinner, Tab, Tabs } from 'react-bootstrap';
+import { Sun, Moon } from 'react-bootstrap-icons';
+import DataList from './DataList';
 
 export default function Dashboard({ session }) {
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('financial');
   const [userData, setUserData] = useState({
     expenses: [],
     incomes: [],
@@ -14,41 +18,48 @@ export default function Dashboard({ session }) {
     goals: [],
   });
 
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const { user } = session;
+
+      const [ 
+        { data: expenses, error: expensesError },
+        { data: incomes, error: incomesError },
+        { data: cards, error: cardsError },
+        { data: purchases, error: purchasesError },
+        { data: banks, error: banksError },
+        { data: bills, error: billsError },
+        { data: goals, error: goalsError },
+      ] = await Promise.all([
+        supabase.from('expenses').select('*').eq('user_id', user.id),
+        supabase.from('incomes').select('*').eq('user_id', user.id),
+        supabase.from('cards').select('*').eq('user_id', user.id),
+        supabase.from('purchases').select('*').eq('user_id', user.id),
+        supabase.from('banks').select('*').eq('user_id', user.id),
+        supabase.from('bills').select('*').eq('user_id', user.id),
+        supabase.from('goals').select('*').eq('user_id', user.id),
+      ]);
+
+      if (expensesError) throw expensesError;
+      if (incomesError) throw incomesError;
+      if (cardsError) throw cardsError;
+      if (purchasesError) throw purchasesError;
+      if (banksError) throw banksError;
+      if (billsError) throw billsError;
+      if (goalsError) throw goalsError;
+
+      setUserData({ expenses, incomes, cards, purchases, banks, bills, goals });
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadUserData = async () => {
-      try {
-        setLoading(true);
-        const { user } = session;
-
-        const { data: expenses, error: expensesError } = await supabase.from('expenses').select('*').eq('user_id', user.id);
-        if (expensesError) throw expensesError;
-
-        const { data: incomes, error: incomesError } = await supabase.from('incomes').select('*').eq('user_id', user.id);
-        if (incomesError) throw incomesError;
-
-        const { data: cards, error: cardsError } = await supabase.from('cards').select('*').eq('user_id', user.id);
-        if (cardsError) throw cardsError;
-
-        const { data: purchases, error: purchasesError } = await supabase.from('purchases').select('*').eq('user_id', user.id);
-        if (purchasesError) throw purchasesError;
-
-        const { data: banks, error: banksError } = await supabase.from('banks').select('*').eq('user_id', user.id);
-        if (banksError) throw banksError;
-
-        const { data: bills, error: billsError } = await supabase.from('bills').select('*').eq('user_id', user.id);
-        if (billsError) throw billsError;
-
-        const { data: goals, error: goalsError } = await supabase.from('goals').select('*').eq('user_id', user.id);
-        if (goalsError) throw goalsError;
-
-        setUserData({ expenses, incomes, cards, purchases, banks, bills, goals });
-      } catch (error) {
-        alert(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadUserData();
   }, [session]);
 
@@ -56,49 +67,99 @@ export default function Dashboard({ session }) {
     await supabase.auth.signOut();
   };
 
+  const handleDelete = async (tableName, id) => {
+    if (window.confirm(`Tem certeza que deseja deletar este item?`)) {
+      const { error } = await supabase.from(tableName).delete().eq('id', id);
+      if (error) {
+        alert(`Erro ao deletar: ${error.message}`);
+      } else {
+        // Refresh user data after deletion
+        loadUserData();
+      }
+    }
+  };
+
   if (loading) {
-    return <div className="auth-screen active"><div className="auth-container">Carregando dados...</div></div>;
+    return (
+      <Container className="vh-100 d-flex justify-content-center align-items-center">
+        <Spinner animation="border" variant={theme === 'dark' ? 'light' : 'dark'} />
+        <span className="ms-3">Carregando dados...</span>
+      </Container>
+    );
   }
 
   return (
-    <div className="main-app active">
-      <header className="app-header">
-        <div className="header-left">
-          <h1>💰 Controle de Financeiro Visual Tech</h1>
-        </div>
-        <div className="header-right">
-          <span id="userName">{session.user.user_metadata?.name || session.user.email}</span>
-          <button id="themeToggle" className="theme-toggle">
-            <span className="theme-icon">🌙</span>
-          </button>
-          <button onClick={handleSignOut} id="logoutBtn" className="logout-btn">Sair</button>
-        </div>
-      </header>
+    <>
+      <Navbar bg={theme} variant={theme} expand="lg" className="mb-4 shadow-sm">
+        <Container>
+          <Navbar.Brand href="#home">💰 Controle Financeiro</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="ms-auto align-items-center">
+              <Nav.Item className="me-3">
+                <span className="navbar-text">{session.user.user_metadata?.name || session.user.email}</span>
+              </Nav.Item>
+              <Button variant="outline-secondary" onClick={toggleTheme} className="me-3">
+                {theme === 'light' ? <Moon /> : <Sun />}
+              </Button>
+              <Button variant="outline-danger" onClick={handleSignOut}>Sair</Button>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
 
-      <nav className="tab-navigation">
-        <button className={`tab-btn ${activeTab === 'financial' ? 'active' : ''}`} onClick={() => setActiveTab('financial')}>💰 Financeiro</button>
-        <button className={`tab-btn ${activeTab === 'incomes' ? 'active' : ''}`} onClick={() => setActiveTab('incomes')}>💵 Entradas</button>
-        <button className={`tab-btn ${activeTab === 'cards' ? 'active' : ''}`} onClick={() => setActiveTab('cards')}>💳 Cartões</button>
-        <button className={`tab-btn ${activeTab === 'banks' ? 'active' : ''}`} onClick={() => setActiveTab('banks')}>🏦 Bancos</button>
-        <button className={`tab-btn ${activeTab === 'bills' ? 'active' : ''}`} onClick={() => setActiveTab('bills')}>📄 Faturas</button>
-        <button className={`tab-btn ${activeTab === 'goals' ? 'active' : ''}`} onClick={() => setActiveTab('goals')}>🎯 Metas</button>
-      </nav>
-
-      <main className="main-content">
-        <div id="financial" className={`tab-content ${activeTab === 'financial' ? 'active' : ''}`}>
-            <p>Conteúdo da aba Financeiro</p>
-            <pre>{JSON.stringify(userData.expenses, null, 2)}</pre>
-        </div>
-        <div id="incomes" className={`tab-content ${activeTab === 'incomes' ? 'active' : ''}`}>
-            <p>Conteúdo da aba Entradas</p>
-            <pre>{JSON.stringify(userData.incomes, null, 2)}</pre>
-        </div>
-        <div id="cards" className={`tab-content ${activeTab === 'cards' ? 'active' : ''}`}>
-            <p>Conteúdo da aba Cartões</p>
-            <pre>{JSON.stringify(userData.cards, null, 2)}</pre>
-        </div>
-        {/* Adicionar outras abas aqui */}
-      </main>
-    </div>
+      <Container>
+        <Tabs defaultActiveKey="expenses" id="main-tabs" className="mb-3" justify>
+          <Tab eventKey="expenses" title="💰 Despesas">
+            <DataList 
+              title="Despesas" 
+              data={userData.expenses} 
+              onAdd={() => alert('Adicionar nova despesa')} 
+              onDelete={(id) => handleDelete('expenses', id)}
+            />
+          </Tab>
+          <Tab eventKey="incomes" title="💵 Entradas">
+            <DataList 
+              title="Entradas" 
+              data={userData.incomes} 
+              onAdd={() => alert('Adicionar nova entrada')} 
+              onDelete={(id) => handleDelete('incomes', id)}
+            />
+          </Tab>
+          <Tab eventKey="cards" title="💳 Cartões">
+            <DataList 
+              title="Cartões" 
+              data={userData.cards} 
+              onAdd={() => alert('Adicionar novo cartão')} 
+              onDelete={(id) => handleDelete('cards', id)}
+            />
+          </Tab>
+          <Tab eventKey="banks" title="🏦 Bancos">
+            <DataList 
+              title="Bancos" 
+              data={userData.banks} 
+              onAdd={() => alert('Adicionar novo banco')} 
+              onDelete={(id) => handleDelete('banks', id)}
+            />
+          </Tab>
+          <Tab eventKey="bills" title="📄 Faturas">
+            <DataList 
+              title="Faturas" 
+              data={userData.bills} 
+              onAdd={() => alert('Adicionar nova fatura')} 
+              onDelete={(id) => handleDelete('bills', id)}
+            />
+          </Tab>
+          <Tab eventKey="goals" title="🎯 Metas">
+            <DataList 
+              title="Metas" 
+              data={userData.goals} 
+              onAdd={() => alert('Adicionar nova meta')} 
+              onDelete={(id) => handleDelete('goals', id)}
+            />
+          </Tab>
+        </Tabs>
+      </Container>
+    </>
   );
 }
