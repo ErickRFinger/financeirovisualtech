@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import Auth from './components/Auth';
-import Dashboard from './components/Dashboard';
+import MainLayout from './layout/MainLayout';
+import DashboardPage from './pages/DashboardPage';
+import LancamentosPage from './pages/LancamentosPage';
+import ContasPagarPage from './pages/ContasPagarPage';
+import ContasReceberPage from './pages/ContasReceberPage';
+import ConfiguracoesPage from './pages/ConfiguracoesPage';
 
 function App() {
   const [session, setSession] = useState(null);
@@ -24,13 +30,20 @@ function App() {
   }, []);
 
   if (loading) {
-    return <div>Carregando...</div>; // Ou um componente de spinner
+    return <div className="flex justify-content-center align-items-center h-screen">Carregando...</div>;
   }
 
   return (
-    <div>
-      {!session ? <Auth /> : <Dashboard key={session.user.id} session={session} />}
-    </div>
+    <Routes>
+      <Route path="/login" element={!session ? <Auth /> : <Navigate to="/" />} />
+      <Route element={session ? <MainLayout /> : <Navigate to="/login" />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/lancamentos" element={<LancamentosPage />} />
+        <Route path="/contas-a-pagar" element={<ContasPagarPage />} />
+        <Route path="/contas-a-receber" element={<ContasReceberPage />} />
+        <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+      </Route>
+    </Routes>
   );
 }
 

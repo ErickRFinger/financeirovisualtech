@@ -1,7 +1,11 @@
-import { useState, useContext } from 'react';
+import { useState } from 'react';
 import { supabase } from '../supabaseClient';
-import { ThemeContext } from '../contexts/ThemeContext';
-import { Container, Row, Col, Card, Form, Button, Spinner, Alert } from 'react-bootstrap';
+import { Card } from 'primereact/card';
+import { InputText } from 'primereact/inputtext';
+import { Password } from 'primereact/password';
+import { Button } from 'primereact/button';
+import { Checkbox } from 'primereact/checkbox';
+import { Message } from 'primereact/message';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -13,8 +17,6 @@ export default function Auth() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-
-  const { theme } = useContext(ThemeContext);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -55,114 +57,66 @@ export default function Auth() {
     setLoading(false);
   };
 
-  const AuthForm = (
-    <Card bg={theme} text={theme === 'dark' ? 'light' : 'dark'} className="shadow-lg">
-      <Card.Body className="p-4 p-sm-5">
-        <div className="text-center mb-4">
-          <h1 className="h3 fw-bold">💰 Controle Financeiro</h1>
-          <p className="text-muted">{isRegisterView ? "Crie sua conta gratuita" : "Faça login para acessar"}</p>
-        </div>
-
-        {error && <Alert variant="danger">{error}</Alert>}
-        {message && <Alert variant="success">{message}</Alert>}
-
-        <Form onSubmit={isRegisterView ? handleSignUp : handleLogin}>
-          {isRegisterView && (
-            <Form.Group className="mb-3" controlId="registerName">
-              <Form.Label>Nome</Form.Label>
-              <Form.Control
-                type="text"
-                required
-                placeholder="Seu nome completo"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </Form.Group>
-          )}
-
-          <Form.Group className="mb-3" controlId="authEmail">
-            <Form.Label>Email</Form.Label>
-            <Form.Control
-              type="email"
-              required
-              placeholder="seu@email.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group className="mb-3" controlId="authPassword">
-            <Form.Label>Senha</Form.Label>
-            <Form.Control
-              type="password"
-              required
-              placeholder={isRegisterView ? "Mínimo 6 caracteres" : "Sua senha"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Form.Group>
-
-          {isRegisterView && (
-            <>
-              <Form.Group className="mb-3" controlId="registerConfirmPassword">
-                <Form.Label>Confirmar Senha</Form.Label>
-                <Form.Control
-                  type="password"
-                  required
-                  placeholder="Digite a senha novamente"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3" controlId="acceptTerms">
-                <Form.Check 
-                  type="checkbox"
-                  label="Aceito os termos de uso"
-                  required
-                  checked={acceptTerms}
-                  onChange={(e) => setAcceptTerms(e.target.checked)}
-                />
-              </Form.Group>
-            </>
-          )}
-
-          <div className="d-grid">
-            <Button variant="primary" type="submit" disabled={loading}>
-              {loading ? (
-                <><Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Carregando...</>
-              ) : (
-                isRegisterView ? "Criar Conta" : "Entrar"
-              )}
-            </Button>
-          </div>
-        </Form>
-
-        <div className="text-center mt-4">
-          {isRegisterView ? (
-            <p className="text-muted">
-              Já tem uma conta?{" "}
-              <Button variant="link" onClick={() => { setIsRegisterView(false); setError(''); setMessage(''); }}>
-                Faça login
-              </Button>
-            </p>
-          ) : (
-            <p className="text-muted">
-              Não tem uma conta?{" "}
-              <Button variant="link" onClick={() => { setIsRegisterView(true); setError(''); setMessage(''); }}>
-                Cadastre-se
-              </Button>
-            </p>
-          )}
-        </div>
-      </Card.Body>
-    </Card>
+  const header = (
+    <div className="text-center">
+        <img src="/LOGOS/VISUAL TECH.png" alt="Logo" className="h-4rem mb-3" />
+        <h1 className="text-2xl font-bold">💰 Controle Financeiro</h1>
+        <p className="text-gray-500">{isRegisterView ? "Crie sua conta gratuita" : "Faça login para acessar"}</p>
+    </div>
   );
 
   return (
-    <div className="d-flex align-items-center justify-content-center min-vh-100">
-        <Col md={6} lg={4}>
-            {AuthForm}
-        </Col>
+    <div className="flex align-items-center justify-content-center min-h-screen bg-gray-900">
+        <Card header={header} className="w-full max-w-25rem">
+            <form onSubmit={isRegisterView ? handleSignUp : handleLogin} className="p-fluid">
+                {error && <Message severity="error" text={error} className="mb-3" />}
+                {message && <Message severity="success" text={message} className="mb-3" />}
+
+                {isRegisterView && (
+                    <div className="field mt-3">
+                        <span className="p-float-label">
+                            <InputText id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+                            <label htmlFor="name">Nome</label>
+                        </span>
+                    </div>
+                )}
+
+                <div className="field mt-3">
+                    <span className="p-float-label">
+                        <InputText id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        <label htmlFor="email">Email</label>
+                    </span>
+                </div>
+
+                <div className="field mt-3">
+                    <span className="p-float-label">
+                        <Password id="password" value={password} onChange={(e) => setPassword(e.target.value)} required feedback={false} toggleMask />
+                        <label htmlFor="password">Senha</label>
+                    </span>
+                </div>
+
+                {isRegisterView && (
+                    <>
+                        <div className="field mt-3">
+                            <span className="p-float-label">
+                                <Password id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} required feedback={false} toggleMask />
+                                <label htmlFor="confirmPassword">Confirmar Senha</label>
+                            </span>
+                        </div>
+                        <div className="field-checkbox mt-3">
+                            <Checkbox inputId="acceptTerms" checked={acceptTerms} onChange={e => setAcceptTerms(e.checked)} required />
+                            <label htmlFor="acceptTerms">Aceito os termos de uso</label>
+                        </div>
+                    </>
+                )}
+
+                <Button type="submit" label={isRegisterView ? "Criar Conta" : "Entrar"} className="mt-3" loading={loading} />
+            </form>
+
+            <div className="text-center mt-3">
+                <Button label={isRegisterView ? "Já tem uma conta? Faça login" : "Não tem uma conta? Cadastre-se"} className="p-button-link" onClick={() => { setIsRegisterView(!isRegisterView); setError(''); setMessage(''); }} />
+            </div>
+        </Card>
     </div>
   );
 }
