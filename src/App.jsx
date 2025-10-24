@@ -41,6 +41,15 @@ function App() {
           return;
         }
 
+        // Verifica se o Supabase está configurado corretamente
+        if (supabaseUrl.includes('placeholder')) {
+          console.warn('Supabase não configurado, usando modo demo');
+          setDemoMode(true);
+          setSession({ user: { id: 'demo-user', email: 'demo@example.com' } });
+          setLoading(false);
+          return;
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -61,7 +70,8 @@ function App() {
     getSession();
 
     // Escuta mudanças no estado de autenticação
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
       setSession(session);
       setLoading(false);
     });

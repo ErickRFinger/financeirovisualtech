@@ -7,6 +7,7 @@ import { Button } from 'primereact/button';
 import { Checkbox } from 'primereact/checkbox';
 import { Message } from 'primereact/message';
 import { Divider } from 'primereact/divider';
+import { getConfig } from '../config/production';
 
 export default function Auth() {
   const [loading, setLoading] = useState(false);
@@ -18,12 +19,22 @@ export default function Auth() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  
+  // Verificar configuração
+  const config = getConfig();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
     setMessage('');
+    
+    // Verificar se o Supabase está configurado
+    if (!config.isSupabaseConfigured) {
+      setError('Sistema em modo demo. Configure o Supabase para autenticação completa.');
+      setLoading(false);
+      return;
+    }
     
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ 
@@ -32,11 +43,17 @@ export default function Auth() {
       });
       
       if (error) {
+        console.error('Login error:', error);
         setError(getErrorMessage(error.message));
       } else if (data.user) {
         setMessage('Login realizado com sucesso!');
+        // Redirecionar após login bem-sucedido
+        setTimeout(() => {
+          window.location.href = '/';
+        }, 1000);
       }
     } catch (err) {
+      console.error('Login catch error:', err);
       setError('Erro inesperado. Tente novamente.');
     }
     
@@ -109,10 +126,28 @@ export default function Auth() {
       'User already registered': 'Este email já está cadastrado',
       'Password should be at least 6 characters': 'A senha deve ter pelo menos 6 caracteres',
       'Invalid email': 'Email inválido',
-      'Signup requires a valid password': 'Senha inválida'
+      'Signup requires a valid password': 'Senha inválida',
+      'Invalid login credentials': 'Credenciais inválidas',
+      'Too many requests': 'Muitas tentativas. Tente novamente em alguns minutos',
+      'Network error': 'Erro de conexão. Verifique sua internet',
+      'Failed to fetch': 'Erro de conexão. Verifique sua internet'
     };
     
-    return errorMessages[error] || error;
+    // Tratar erros específicos do Supabase
+    if (error.includes('Invalid login credentials')) {
+      return 'Email ou senha incorretos';
+    }
+    if (error.includes('Email not confirmed')) {
+      return 'Email não confirmado. Verifique sua caixa de entrada.';
+    }
+    if (error.includes('Too many requests')) {
+      return 'Muitas tentativas. Tente novamente em alguns minutos.';
+    }
+    if (error.includes('Network') || error.includes('fetch')) {
+      return 'Erro de conexão. Verifique sua internet e tente novamente.';
+    }
+    
+    return errorMessages[error] || 'Erro inesperado. Tente novamente.';
   };
 
   const resetForm = () => {
