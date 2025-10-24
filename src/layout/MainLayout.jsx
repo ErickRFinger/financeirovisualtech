@@ -1,6 +1,4 @@
-
-// src/layout/MainLayout.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Button } from 'primereact/button';
 import { Sidebar } from 'primereact/sidebar';
@@ -8,58 +6,215 @@ import { supabase } from '../supabaseClient';
 
 const MainLayout = () => {
     const [sidebarVisible, setSidebarVisible] = useState(false);
+    const [theme, setTheme] = useState('dark');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        // Aplicar tema ao body
+        document.body.setAttribute('data-theme', theme);
+        // Salvar preferência
+        localStorage.setItem('theme', theme);
+    }, [theme]);
+
+    useEffect(() => {
+        // Carregar tema salvo
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        setTheme(savedTheme);
+    }, []);
 
     const handleLogout = async () => {
         await supabase.auth.signOut();
         navigate('/login');
     };
 
+    const toggleTheme = () => {
+        setTheme(theme === 'dark' ? 'light' : 'dark');
+    };
+
     const menuItems = [
-        { label: 'Dashboard', icon: 'pi pi-th-large', to: '/' },
-        { label: 'Lançamentos', icon: 'pi pi-dollar', to: '/lancamentos' },
-        { label: 'Contas a Pagar', icon: 'pi pi-arrow-down', to: '/contas-a-pagar' },
-        { label: 'Contas a Receber', icon: 'pi pi-arrow-up', to: '/contas-a-receber' },
-        { label: 'Configurações', icon: 'pi pi-cog', to: '/configuracoes' },
+        {
+            label: 'Dashboard',
+            icon: 'pi pi-chart-line',
+            to: '/dashboard',
+            description: 'Visão geral das finanças',
+            color: 'blue'
+        },
+        {
+            label: 'Lançamentos',
+            icon: 'pi pi-money-bill',
+            to: '/lancamentos',
+            description: 'Receitas e despesas',
+            color: 'green'
+        },
+        {
+            label: 'Contas a Pagar',
+            icon: 'pi pi-credit-card',
+            to: '/contas-a-pagar',
+            description: 'Bills e pagamentos',
+            color: 'red'
+        },
+        {
+            label: 'Contas a Receber',
+            icon: 'pi pi-wallet',
+            to: '/contas-a-receber',
+            description: 'Cobranças pendentes',
+            color: 'orange'
+        },
+        {
+            label: 'Relatórios',
+            icon: 'pi pi-chart-bar',
+            to: '/relatorios',
+            description: 'Análises e gráficos',
+            color: 'purple'
+        },
+        {
+            label: 'Categorias',
+            icon: 'pi pi-tags',
+            to: '/categorias',
+            description: 'Organize suas categorias',
+            color: 'cyan'
+        },
+        {
+            label: 'Metas',
+            icon: 'pi pi-flag',
+            to: '/metas',
+            description: 'Objetivos financeiros',
+            color: 'pink'
+        },
+        {
+            label: 'Investimentos',
+            icon: 'pi pi-chart-pie',
+            to: '/investimentos',
+            description: 'Portfolio e ativos',
+            color: 'teal'
+        },
+        {
+            label: 'Orçamento',
+            icon: 'pi pi-calendar',
+            to: '/orcamento',
+            description: 'Controle mensal',
+            color: 'indigo'
+        },
+        {
+            label: 'Comprovantes',
+            icon: 'pi pi-file-image',
+            to: '/comprovantes',
+            description: 'Documentos digitalizados',
+            color: 'amber'
+        },
+        {
+            label: 'Backup',
+            icon: 'pi pi-cloud-upload',
+            to: '/backup',
+            description: 'Exportar dados',
+            color: 'lime'
+        },
+        {
+            label: 'Configurações',
+            icon: 'pi pi-cog',
+            to: '/configuracoes',
+            description: 'Preferências do sistema',
+            color: 'gray'
+        },
     ];
 
     const sidebarContent = (
-        <div className="flex flex-column h-full">
-            <div className="p-2 flex align-items-center">
-                <img src="/LOGOS/VISUAL TECH.png" alt="Logo" style={{ height: '40px', marginRight: '10px' }} />
-                <span className="font-bold">Financeiro</span>
+        <div className="sidebar-content">
+            {/* Header */}
+            <div className="sidebar-header">
+                <div className="logo-container">
+                    <div className="logo-icon">💰</div>
+                    <div className="logo-text">
+                        <h3 className="logo-title">Financeiro</h3>
+                        <p className="logo-subtitle">Visual Tech</p>
+                    </div>
+                </div>
             </div>
-            <ul className="mt-4 list-none p-0">
-                {menuItems.map((item) => (
-                    <li key={item.label}>
-                        <NavLink to={item.to} className={({ isActive }) => `flex align-items-center p-3 ripple ${isActive ? 'bg-gray-700' : ''}`}>
-                            <i className={`${item.icon} mr-2`}></i>
-                            <span>{item.label}</span>
-                        </NavLink>
-                    </li>
-                ))}
-            </ul>
-            <div className="mt-auto p-3">
-                <Button label="Sair" icon="pi pi-sign-out" className="w-full" onClick={handleLogout} />
+
+            {/* Navigation */}
+            <nav className="sidebar-nav">
+                <ul className="nav-list">
+                    {menuItems.map((item) => (
+                        <li key={item.label} className="nav-item-wrapper">
+                            <NavLink
+                                to={item.to}
+                                className={({ isActive }) => 
+                                    `nav-item ${isActive ? 'active' : ''}`
+                                }
+                            >
+                                <i className={`nav-icon ${item.icon}`}></i>
+                                <div className="nav-content">
+                                    <span className="nav-label">{item.label}</span>
+                                    <span className="nav-description">{item.description}</span>
+                                </div>
+                            </NavLink>
+                        </li>
+                    ))}
+                </ul>
+            </nav>
+
+            {/* Footer */}
+            <div className="sidebar-footer">
+                <div className="theme-toggle">
+                    <button
+                        onClick={toggleTheme}
+                        className="modern-btn modern-btn-secondary"
+                        style={{ width: '100%', marginBottom: '12px' }}
+                    >
+                        {theme === 'dark' ? '☀️' : '🌙'} {theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}
+                    </button>
+                </div>
+                <button
+                    onClick={handleLogout}
+                    className="modern-btn"
+                    style={{ 
+                        width: '100%', 
+                        background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                        border: 'none'
+                    }}
+                >
+                    🚪 Sair do Sistema
+                </button>
             </div>
         </div>
     );
 
     return (
-        <div className="flex min-h-screen bg-gray-800 text-white">
-            <Sidebar visible={sidebarVisible} onHide={() => setSidebarVisible(false)} className="w-18rem bg-gray-900">
+        <div className="main-layout">
+            {/* Sidebar Desktop */}
+            <aside className="sidebar">
                 {sidebarContent}
-            </Sidebar>
-            <div className="hidden lg:block w-18rem bg-gray-900">
-                 {sidebarContent}
+            </aside>
+
+            {/* Mobile Menu Button */}
+            <div className="mobile-menu-btn">
+                <Button
+                    icon="pi pi-bars"
+                    onClick={() => setSidebarVisible(true)}
+                    className="p-button-rounded p-button-text"
+                    style={{ 
+                        color: 'var(--primary-color)',
+                        fontSize: '1.5rem'
+                    }}
+                />
             </div>
 
-            <div className="flex-grow-1 p-4">
-                 <Button icon="pi pi-bars" onClick={() => setSidebarVisible(true)} className="p-button-text text-white lg:hidden" />
-                <main>
+            {/* Sidebar Mobile */}
+            <Sidebar
+                visible={sidebarVisible}
+                onHide={() => setSidebarVisible(false)}
+                style={{ width: '280px' }}
+                className="mobile-sidebar"
+            >
+                {sidebarContent}
+            </Sidebar>
+
+            {/* Main Content */}
+            <main className="main-content">
+                <div className="content-wrapper">
                     <Outlet />
-                </main>
-            </div>
+                </div>
+            </main>
         </div>
     );
 };
