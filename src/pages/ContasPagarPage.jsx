@@ -39,6 +39,28 @@ const ContasPagarPage = () => {
         );
     };
 
+    const handleMarcarComoPago = (id) => {
+        console.log('Marcar como pago:', id);
+        // Implementar lógica de marcar como pago
+        if (window.confirm('Marcar esta conta como paga?')) {
+            console.log('Conta marcada como paga:', id);
+        }
+    };
+
+    const handleEditar = (id) => {
+        console.log('Editar conta:', id);
+        // Implementar lógica de edição
+        setVisible(true);
+    };
+
+    const handleExcluir = (id) => {
+        console.log('Excluir conta:', id);
+        // Implementar lógica de exclusão
+        if (window.confirm('Tem certeza que deseja excluir esta conta?')) {
+            console.log('Conta excluída:', id);
+        }
+    };
+
     const acoesBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
@@ -49,6 +71,7 @@ const ContasPagarPage = () => {
                         severity="success"
                         className="action-btn"
                         tooltip="Marcar como pago"
+                        onClick={() => handleMarcarComoPago(rowData.id)}
                     />
                 )}
                 <Button 
@@ -57,6 +80,7 @@ const ContasPagarPage = () => {
                     severity="info"
                     className="action-btn"
                     tooltip="Editar"
+                    onClick={() => handleEditar(rowData.id)}
                 />
                 <Button 
                     icon="pi pi-trash" 
@@ -64,6 +88,7 @@ const ContasPagarPage = () => {
                     severity="danger"
                     className="action-btn"
                     tooltip="Excluir"
+                    onClick={() => handleExcluir(rowData.id)}
                 />
             </div>
         );

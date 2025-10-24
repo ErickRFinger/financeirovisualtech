@@ -1,9 +1,28 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from 'primereact/card';
 import { Button } from 'primereact/button';
 import { ProgressBar } from 'primereact/progressbar';
 
 const DashboardPage = () => {
+    const navigate = useNavigate();
+
+    const handleRelatorioCompleto = () => {
+        navigate('/relatorios');
+    };
+
+    const handleNovoLancamento = () => {
+        navigate('/lancamentos');
+    };
+
+    const handleVerRelatorios = () => {
+        navigate('/relatorios');
+    };
+
+    const handleConfiguracoes = () => {
+        navigate('/configuracoes');
+    };
+
     return (
         <div className="dashboard-container animate-fade-in">
             {/* Header */}
@@ -17,6 +36,7 @@ const DashboardPage = () => {
                         label="📊 Relatório Completo" 
                         icon="pi pi-chart-bar"
                         className="modern-btn"
+                        onClick={handleRelatorioCompleto}
                     />
                 </div>
             </div>
@@ -66,18 +86,21 @@ const DashboardPage = () => {
                             icon="pi pi-plus" 
                             className="modern-btn"
                             style={{ width: '100%', marginBottom: '12px' }}
+                            onClick={handleNovoLancamento}
                         />
                         <Button 
                             label="📊 Ver Relatórios" 
                             icon="pi pi-chart-bar" 
                             className="modern-btn modern-btn-secondary"
                             style={{ width: '100%', marginBottom: '12px' }}
+                            onClick={handleVerRelatorios}
                         />
                         <Button 
                             label="⚙️ Configurações" 
                             icon="pi pi-cog" 
                             className="modern-btn modern-btn-secondary"
                             style={{ width: '100%' }}
+                            onClick={handleConfiguracoes}
                         />
                     </div>
                 </div>

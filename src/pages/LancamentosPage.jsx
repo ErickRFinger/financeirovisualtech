@@ -54,6 +54,20 @@ const LancamentosPage = () => {
         );
     };
 
+    const handleEditar = (id) => {
+        console.log('Editar lançamento:', id);
+        // Implementar lógica de edição
+        setVisible(true);
+    };
+
+    const handleExcluir = (id) => {
+        console.log('Excluir lançamento:', id);
+        // Implementar lógica de exclusão
+        if (window.confirm('Tem certeza que deseja excluir este lançamento?')) {
+            console.log('Lançamento excluído:', id);
+        }
+    };
+
     const acoesBodyTemplate = (rowData) => {
         return (
             <div className="action-buttons">
@@ -63,6 +77,7 @@ const LancamentosPage = () => {
                     severity="info"
                     className="action-btn"
                     tooltip="Editar"
+                    onClick={() => handleEditar(rowData.id)}
                 />
                 <Button 
                     icon="pi pi-trash" 
@@ -70,6 +85,7 @@ const LancamentosPage = () => {
                     severity="danger"
                     className="action-btn"
                     tooltip="Excluir"
+                    onClick={() => handleExcluir(rowData.id)}
                 />
             </div>
         );

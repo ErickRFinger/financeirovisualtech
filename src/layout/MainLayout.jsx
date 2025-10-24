@@ -23,8 +23,14 @@ const MainLayout = () => {
     }, []);
 
     const handleLogout = async () => {
-        await supabase.auth.signOut();
-        navigate('/login');
+        try {
+            await supabase.auth.signOut();
+            navigate('/login');
+        } catch (error) {
+            console.error('Erro ao fazer logout:', error);
+            // Forçar logout local mesmo se houver erro
+            navigate('/login');
+        }
     };
 
     const toggleTheme = () => {

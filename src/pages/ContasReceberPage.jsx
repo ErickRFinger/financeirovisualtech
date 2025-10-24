@@ -35,6 +35,28 @@ const ContasReceberPage = () => {
         );
     };
 
+    const handleMarcarComoRecebido = (id) => {
+        console.log('Marcar como recebido:', id);
+        // Implementar lógica de marcar como recebido
+        if (window.confirm('Marcar esta conta como recebida?')) {
+            console.log('Conta marcada como recebida:', id);
+        }
+    };
+
+    const handleEditar = (id) => {
+        console.log('Editar conta:', id);
+        // Implementar lógica de edição
+        setVisible(true);
+    };
+
+    const handleExcluir = (id) => {
+        console.log('Excluir conta:', id);
+        // Implementar lógica de exclusão
+        if (window.confirm('Tem certeza que deseja excluir esta conta?')) {
+            console.log('Conta excluída:', id);
+        }
+    };
+
     const acoesBodyTemplate = (rowData) => {
         return (
             <div style={{ display: 'flex', gap: '5px' }}>
@@ -43,18 +65,21 @@ const ContasReceberPage = () => {
                     size="small" 
                     severity="success"
                     tooltip="Marcar como recebido"
+                    onClick={() => handleMarcarComoRecebido(rowData.id)}
                 />
                 <Button 
                     icon="pi pi-pencil" 
                     size="small" 
                     severity="info"
                     tooltip="Editar"
+                    onClick={() => handleEditar(rowData.id)}
                 />
                 <Button 
                     icon="pi pi-trash" 
                     size="small" 
                     severity="danger"
                     tooltip="Excluir"
+                    onClick={() => handleExcluir(rowData.id)}
                 />
             </div>
         );

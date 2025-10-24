@@ -4,6 +4,24 @@ import { Button } from 'primereact/button';
 import { ProgressBar } from 'primereact/progressbar';
 
 const RelatoriosPage = () => {
+    const handleExportarRelatorio = () => {
+        console.log('Exportar relatório');
+        // Implementar lógica de exportação
+        alert('Funcionalidade de exportação será implementada em breve!');
+    };
+
+    const handleGerarRelatorio = () => {
+        console.log('Gerar relatório');
+        // Implementar lógica de geração de relatório
+        alert('Relatório gerado com sucesso!');
+    };
+
+    const handleConfigurarRelatorio = () => {
+        console.log('Configurar relatório');
+        // Implementar lógica de configuração
+        alert('Configurações de relatório abertas!');
+    };
+
     return (
         <div className="page-container animate-fade-in">
             {/* Header */}
@@ -17,6 +35,7 @@ const RelatoriosPage = () => {
                         label="📤 Exportar Relatório" 
                         icon="pi pi-download"
                         className="modern-btn"
+                        onClick={handleExportarRelatorio}
                     />
                 </div>
             </div>
@@ -80,6 +99,7 @@ const RelatoriosPage = () => {
                         label="Ver Relatório Completo" 
                         className="modern-btn modern-btn-secondary"
                         style={{ width: '100%', marginTop: '20px' }}
+                        onClick={handleGerarRelatorio}
                     />
                 </div>
 
@@ -114,6 +134,7 @@ const RelatoriosPage = () => {
                         label="Ver Relatório Completo" 
                         className="modern-btn modern-btn-secondary"
                         style={{ width: '100%', marginTop: '20px' }}
+                        onClick={handleGerarRelatorio}
                     />
                 </div>
             </div>
@@ -144,6 +165,7 @@ const RelatoriosPage = () => {
                         icon="pi pi-file-pdf"
                         className="modern-btn"
                         style={{ width: '100%', marginTop: '16px' }}
+                        onClick={handleExportarRelatorio}
                     />
                 </div>
 
@@ -180,6 +202,7 @@ const RelatoriosPage = () => {
                         icon="pi pi-chart-bar"
                         className="modern-btn"
                         style={{ width: '100%', marginTop: '16px' }}
+                        onClick={handleGerarRelatorio}
                     />
                 </div>
 
@@ -207,6 +230,7 @@ const RelatoriosPage = () => {
                         icon="pi pi-chart-line"
                         className="modern-btn"
                         style={{ width: '100%', marginTop: '16px' }}
+                        onClick={handleGerarRelatorio}
                     />
                 </div>
             </div>
